@@ -24,7 +24,7 @@ no params
 
 type : `application/json`
 
-```json
+```
 {
     "[container_id]" : {
         "names" : [
@@ -54,7 +54,7 @@ Retrieve the timestamped stat of the container with id `id` since `since`
 
 type : `application\json`
 
-```json
+```
 {
   "1696349754" : {
 	"memory" : {
