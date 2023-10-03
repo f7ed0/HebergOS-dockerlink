@@ -17,6 +17,8 @@ func main() {
 
 	http.HandleFunc("/v1/container/list",handling.ContainerList)
 	http.HandleFunc("/v1/container/stats",handling.Stats)
+	http.HandleFunc("/v1/container/start",handling.StartDocker)
+	http.HandleFunc("/v1/container/stop",handling.StopDocker)
 
 	log.Default().Println("Started !")
 	err := http.ListenAndServe("localhost:7200",nil)

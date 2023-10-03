@@ -157,7 +157,7 @@ func FetchStat() {
 		} 
 		t2 = time.Now()
 
-		log.Default().Println(float64(t2.UnixMilli() - t1.UnixMilli())/1000)
+		//log.Default().Println(float64(t2.UnixMilli() - t1.UnixMilli())/1000)
 		time.Sleep(10*time.Second - time.Duration(t2.UnixNano() - t1.UnixNano()))
 	}
 }

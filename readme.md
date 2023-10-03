@@ -8,13 +8,9 @@ fields required :
 
 ## API endpoints
 
-### v1/container/list
+### `GET` v1/container/list
 
 Retrieve the list of all containers
-
-#### Method
-
-`GET`
 
 #### params
 
@@ -37,13 +33,11 @@ type : `application/json`
 }
 ```
 
-### v1/container/stats
+---
+
+### `GET` v1/container/stats
 
 Retrieve the timestamped stat of the container with id `id` since `since`
-
-#### Method
-
-`GET`
 
 #### params
 
@@ -74,3 +68,31 @@ type : `application\json`
   ...
 }
 ```
+
+---
+
+### `POST` v1/container/start
+
+Start the container of id `id`
+
+#### params
+
+* `id` : the container id that you want to start
+
+#### Response
+
+`plain\text` or `no content`
+
+---
+
+### `POST` v1/container/stop
+
+Stop the container of id `id`
+
+#### params
+
+* `id` : the container id that you want to stop
+
+#### Response
+
+`plain\text` or `no content`
