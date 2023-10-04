@@ -126,6 +126,9 @@ func FetchStat() {
 			}
 
 			//log.Default().Println(u["networks"])
+			if(u == nil) {
+				continue
+			}
 
 			use := u["memory_stats"].(map[string]any)["usage"].(float64) 
 

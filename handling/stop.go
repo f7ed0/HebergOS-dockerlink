@@ -11,6 +11,7 @@ import (
 func StopDocker(resp http.ResponseWriter,req *http.Request) {
 	if req.Method != "POST" {
 		resp.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
 
 	Qmap := req.URL.Query()

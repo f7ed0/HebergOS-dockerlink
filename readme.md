@@ -8,13 +8,14 @@ fields required :
 
 ## API endpoints
 
-### `GET` v1/container/list
+### `GET` v1/container/
 
-Retrieve the list of all containers
+Retrieve information about containers
 
 #### params
 
-no params
+* (optional multiple) `id` : list of the container ids to get
+* (optional) `running` : set to true to get only running container (overridden by id)
 
 #### Response
 
@@ -23,13 +24,12 @@ type : `application/json`
 ```
 {
     "[container_id]" : {
-        "names" : [
-            "name",
-            "alias_1",
-            ...
-        ],
-        "state": "running"|"exited"|...
-    }
+        "name" : "[name]",
+        "state": "[running|exited|paused|restarting|removing|dead]
+		"exit_code" : [value if exited]
+		"started_at" : [unix timestamp if running]
+    },
+	...
 }
 ```
 

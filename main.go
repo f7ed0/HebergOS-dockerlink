@@ -15,7 +15,7 @@ func main() {
 	log.Default().Println("Starting...")
 	go docker.FetchStat()
 
-	http.HandleFunc("/v1/container/list",handling.ContainerList)
+	http.HandleFunc("/v1/container/",handling.Container)
 	http.HandleFunc("/v1/container/stats",handling.Stats)
 	http.HandleFunc("/v1/container/start",handling.StartDocker)
 	http.HandleFunc("/v1/container/stop",handling.StopDocker)
