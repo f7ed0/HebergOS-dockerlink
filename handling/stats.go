@@ -9,7 +9,7 @@ import (
 
 
 func Stats(resp http.ResponseWriter,req *http.Request) {
-	if(req.Method != "GET") {
+	if(req.Method != http.MethodGet) {
 		resp.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}

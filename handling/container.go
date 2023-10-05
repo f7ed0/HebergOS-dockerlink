@@ -8,20 +8,17 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/network"
-	"github.com/docker/go-connections/nat"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 
 func Container(resp http.ResponseWriter,req *http.Request) {
 	switch(req.Method) {
-	case "GET":
+	case http.MethodGet:
 		ContainerGet(resp,req)
 		return
 	case "PUT":
-		ContainerPut(resp,req)
+		resp.WriteHeader(http.StatusNotImplemented)
+		return
 	}
 	
 	resp.WriteHeader(http.StatusMethodNotAllowed)
@@ -104,6 +101,7 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 }
 
 // TODO aled
+/*
 func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 	//qmap := req.URL.Query()
 	//j := json.NewEncoder(resp)
@@ -133,3 +131,4 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 	
 	return
 }
+*/

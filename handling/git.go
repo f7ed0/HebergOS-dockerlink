@@ -1,22 +1,21 @@
 package handling
 
 import (
-	"bytes"
-	"herbergOS/docker"
-	"io"
-	"log"
+	"herbergOS/tool"
 	"net/http"
-	"runtime"
-
-	"github.com/docker/docker/api/types"
 )
 
 func Git(resp http.ResponseWriter,req *http.Request) {
-	if(req.Method == "GET") {
+	if(req.Method == http.MethodGet) {
 		gitGet(resp,req)
 		return
 	}
+	if(req.Method == http.MethodPut) {
+		gitPut(resp,req)
+		return
+	}
 	resp.WriteHeader(http.StatusMethodNotAllowed)
+	return
 }
 
 func gitGet(resp http.ResponseWriter, req *http.Request) {
@@ -30,80 +29,28 @@ func gitGet(resp http.ResponseWriter, req *http.Request) {
 
 	path,ok := qmap["path"]
 
-	exarg := types.ExecConfig{
-		User : "root",
-		AttachStderr: true,
-		AttachStdout: true,
-		Cmd: []string{"git","fetch","--all"},
-	}
-	if ok {
-		exarg.WorkingDir = path[0]
+	if !ok {
+		path = []string{""}
 	}
 
-	dk,err := docker.NewDockerHandler()
-	if err != nil {
-		log.Default().Println(err.Error())
-		resp.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	idresp,err := dk.Client.ContainerExecCreate(dk.Context,id[0],exarg)
-	if err != nil {
-		log.Default().Println(err.Error())
-		resp.WriteHeader(http.StatusInternalServerError)
+	tool.CmdReporter(resp,req,id[0],[]string{"git","pull"},ok,path[0])
+
+}
+
+func gitPut(resp http.ResponseWriter, req *http.Request) {
+	qmap := req.URL.Query()
+
+	id,ok := qmap["id"]
+	if(!ok) {
+		resp.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	// Execute and attach stdout and stderr to a reader
-	response,err := dk.Client.ContainerExecAttach(dk.Context,idresp.ID,types.ExecStartCheck{
+	path,ok := qmap["path"]
 
-	})
-	if err != nil {
-		log.Default().Println(err.Error())
-		resp.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	defer response.Close()
-
-	// inspect the exec to get the return code
-	retcode,err := dk.Client.ContainerExecInspect(dk.Context,idresp.ID)
-	if err != nil {
-		log.Default().Println(err.Error())
-		resp.WriteHeader(http.StatusInternalServerError)
-	}
-	for retcode.Running {
-		retcode,err = dk.Client.ContainerExecInspect(dk.Context,idresp.ID)
-		if err != nil {
-			log.Default().Println(err.Error())
-			resp.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		runtime.Gosched()
+	if !ok {
+		path = []string{""}
 	}
 
-	// sending data
-	res := ""
-	for true {
-		str,_,err := response.Reader.ReadLine()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Default().Println(err.Error())
-			resp.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		res += string(bytes.ToValidUTF8(str,[]byte("")))+"\n"
-	}
-
-	// sending data
-	resp.Header().Set("Content-Type", "text/plain")
-	if retcode.ExitCode != 0 {
-		log.Default().Println("err")
-		resp.WriteHeader(http.StatusPreconditionFailed)
-		resp.Write([]byte(res[7:]))
-		return
-	}
-	
-	resp.Write([]byte(res[:7]))
-	return
+	tool.CmdReporter(resp,req,id[0],[]string{"git","init"},ok,path[0])
 }

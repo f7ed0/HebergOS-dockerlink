@@ -23,6 +23,7 @@ func main() {
 	http.HandleFunc("/v1/git",handling.Git)
 	http.HandleFunc("/v1/git/head",handling.GitHead)
 	http.HandleFunc("/v1/git/branch",handling.GitBranch)
+	http.HandleFunc("/v1/git/branches",handling.GitBranches)
 
 
 	log.Default().Println("Started !")
