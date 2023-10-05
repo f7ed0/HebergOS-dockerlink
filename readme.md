@@ -96,3 +96,75 @@ Stop the container of id `id`
 #### Response
 
 `plain\text` or `no content`
+
+----
+----
+
+### `GET` v1/git
+
+execute `git fetch --all` on the git local repository
+
+#### params
+
+* `id` : id of the container
+* (optional) `path` : indicates the path of the git repo
+
+#### response
+
+`plain\text` : git output
+
+----
+
+### `GET` v1/git/head
+
+returns information about the git head
+
+#### params
+
+* `id` : id of the container
+* (optional) `path` : indicates the path of the git repo
+
+#### response
+
+`plain\text` : git output
+
+----
+
+### `GET` v1/git/branch
+
+fetch all the branch of a given directory if the directory is a git repository
+(distant branches are also fetched)
+
+#### params
+
+* `id` : id of the container
+* (optional) `path` : indicates the path of the git repo
+
+#### response
+
+`plain\text` on error, 
+`application\json` on success
+
+```
+[
+	"[branch 1]",
+	"[branch 2]",
+	...,
+]
+```
+
+---
+
+### `POST` v1/git/branch
+
+Checkout to a new branch (if possible)
+
+#### params
+
+* `id` : id of the container
+* (optional) `path` : indicates the path of the git repo
+* `branch` : name of the branch
+
+#### response
+
+`plain\text` : git output

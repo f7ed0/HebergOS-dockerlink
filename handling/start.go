@@ -14,9 +14,9 @@ func StartDocker(resp http.ResponseWriter,req *http.Request) {
 		return
 	}
 
-	Qmap := req.URL.Query()
+	qmap := req.URL.Query()
 
-	id,ok := Qmap["id"]
+	id,ok := qmap["id"]
 	if(!ok) {
 		resp.WriteHeader(http.StatusBadRequest)
 	}

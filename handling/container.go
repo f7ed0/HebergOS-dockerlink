@@ -8,14 +8,22 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/go-connections/nat"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 
 func Container(resp http.ResponseWriter,req *http.Request) {
-	if(req.Method == "GET") {
+	switch(req.Method) {
+	case "GET":
 		ContainerGet(resp,req)
 		return
+	case "PUT":
+		ContainerPut(resp,req)
 	}
+	
 	resp.WriteHeader(http.StatusMethodNotAllowed)
 	return
 	
@@ -26,9 +34,6 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 	j := json.NewEncoder(resp)
 
 	ids,ok := qmap["id"]
-	
-
-	
 
 	dk,err := docker.NewDockerHandler()
 	if err != nil {
@@ -95,5 +100,36 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 	resp.Header().Set("Content-Type", "application/json")
 	j.Encode(result)
 
+	return
+}
+
+// TODO aled
+func ContainerPut(resp http.ResponseWriter,req *http.Request) {
+	//qmap := req.URL.Query()
+	//j := json.NewEncoder(resp)
+
+	// TODO retrieve data from qmap
+
+	dk,err := docker.NewDockerHandler()
+	if err != nil {
+		log.Default().Printf("ERR : %v\n",err.Error())
+		resp.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	dk.Client.ContainerCreate(
+		dk.Context,
+		&container.Config{
+			User : "root",
+			ExposedPorts: nat.PortSet{
+				"80" : struct{}{},
+			},
+		},
+		&container.HostConfig{},
+		&network.NetworkingConfig{},
+		&v1.Platform{},
+		"test",
+	)
+	
 	return
 }
