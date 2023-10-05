@@ -39,17 +39,21 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 		return
 	}
 
+	running := false
+	has_run := false
+
 	if !ok {
-		running := false
+		
 
 		r,ok := qmap["running"]
 
 		if ok {
 			running = r[0] == "true"
+			has_run = true
 		}
 		
 		containers,err := dk.Client.ContainerList(dk.Context,types.ContainerListOptions{
-			All: !running,
+			All: true,
 		})
 	
 		if err != nil {
@@ -76,6 +80,9 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 			return
 		}
 		
+		if  has_run && json.State.Running != running {
+			continue
+		}
 
 		result[id] = map[string]any{"name":json.Name,"state":json.State.Status}
 
