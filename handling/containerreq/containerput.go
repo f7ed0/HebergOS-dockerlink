@@ -73,7 +73,7 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 		img = os.Getenv("base_image")
 	}
 
-	command_concat := "nginx && sh /var/www/starter.sh"
+	command_concat := "sh /var/www/starter.sh"
 
 	// Get stating command
 	cmds,ok := p["commands"].([]string)

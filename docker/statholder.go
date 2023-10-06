@@ -140,7 +140,10 @@ func FetchStat() {
 				continue
 			}
 
-			use := u["memory_stats"].(map[string]any)["usage"].(float64) 
+			use,ok := (u["memory_stats"].(map[string]any)["usage"].(float64))
+			if !ok {
+				continue
+			}
 
 			s := new(Stat)
 			s.MemUsage = ( use  )/Go
