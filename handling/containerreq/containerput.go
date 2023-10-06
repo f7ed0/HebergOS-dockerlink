@@ -73,7 +73,7 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 		img = os.Getenv("base_image")
 	}
 
-	command_concat := "/usr/sbin/sshd -D && nginx"
+	command_concat := "nginx && sh /var/www/starter.sh"
 
 	// Get stating command
 	cmds,ok := p["commands"].([]string)
@@ -82,6 +82,8 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 			command_concat += " && "+cmd
 		}
 	}
+
+	command_concat += " && /usr/sbin/sshd -D"
 
 	// Get ports to forward
 	prts := nat.PortSet{

@@ -23,5 +23,4 @@ func Container(resp http.ResponseWriter,req *http.Request) {
 	}
 	resp.WriteHeader(http.StatusMethodNotAllowed)
 	return
-	
 }
