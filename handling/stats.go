@@ -24,11 +24,13 @@ func Stats(resp http.ResponseWriter,req *http.Request) {
 	since,ok := Qmap["since"]
 	if(!ok) {
 		resp.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	intsince,err := strconv.ParseInt(since[0],10,64)
 	if err != nil {
 		resp.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	resp.Header().Set("Content-Type", "application/json")

@@ -5,8 +5,15 @@
 fields required :
 
 * `docker_sock` : path to your docker socket
+* `port_area_size` : size of the port area for each docker (recommended 5000)
+* `base_image` : id of the image you use by default to run a new docker container
 
 ## API endpoints
+
+### 
+
+---
+---
 
 ### `GET` v1/container/
 
@@ -24,14 +31,77 @@ type : `application/json`
 ```
 {
     "[container_id]" : {
+		"host_port_root": [root of port on host],
         "name" : "[name]",
-        "state": "[running|exited|paused|restarting|removing|dead]
+		"ports": {
+			"[port]/[tcp|udp]": {},
+			...
+		},
+        "state": "[running|exited|paused|restarting|removing|dead|created]
 		"exit_code" : [value if exited]
 		"started_at" : [unix timestamp if running]
     },
 	...
 }
 ```
+
+---
+
+### `PUT` v1/container
+
+creates a new container for HerbergOS usage (creates a volume on www/var)
+
+(port 22,80 and 443 are forwarded by default)
+
+#### body
+
+`json`
+
+```
+{
+	"name" : [name of the container],
+	"host_port_root" : [number basis for port forwarding],
+	"memory" : [limit of memory in Go (can be decimal)],
+	"cpulimit" : [limit in number of cpu (can be decimal)],
+	"ports"(optional) : [
+		"[port]/[tcp|udp]",
+		...
+	]
+	"image"(optional) : [image id],
+	"commands"(optional) : [
+		[command to launch at start]
+	]
+}
+```
+
+#### Response
+
+`plain\text` on error
+
+`application\json` on success
+
+```
+{
+	"Id" : [id of the new container]
+	"warning" : [
+		[warnings coming from docker],
+		...
+	]
+}
+```
+
+---
+### `DELETE` v1/container
+
+Delete a container by id
+
+#### params
+
+* id
+
+#### Response
+
+`plain\text`
 
 ---
 
@@ -57,6 +127,7 @@ type : `application\json`
 	},
 	"cpu" : {
 	  "usage_percent" : [cpu usage in percent (100% = 1 core)]
+	  "limit" : [cpu limit usage in percent (100% = 1 core) (can be NaN)]
 	},
 	"net" : {
 	  "up" : [upload since launch in ko],

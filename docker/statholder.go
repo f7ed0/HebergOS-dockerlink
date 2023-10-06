@@ -17,7 +17,8 @@ const STAT_STRING string = `  "%v" : {
 	  "limit" : %v
 	},
 	"cpu" : {
-	  "usage_percent" : %v
+	  "usage_percent" : %v,
+	  "limit" : %v
 	},
 	"net" : {
 	  "up" : %v,
@@ -37,6 +38,7 @@ type Stat struct {
 
 	CpuPercent 	float64
 	CpuUsage 	float64
+	CpuQuota	float64
 
 	NetRx 		float64
 	NetTx 		float64
@@ -65,6 +67,7 @@ func (s StatHolder) Export(container_id string,since int64) string {
 				strconv.FormatFloat(val.MemUsage,'f',6,64),
 				strconv.FormatFloat(val.MemLimit,'f',6,64),
 				strconv.FormatFloat(val.CpuPercent,'f',3,64),
+				strconv.FormatFloat(val.CpuQuota,'f',3,64),
 				strconv.FormatFloat(val.NetTx,'f',0,64),
 				strconv.FormatFloat(val.NetRx,'f',0,64),
 				strconv.FormatFloat(val.NetDTx,'f',0,64),
@@ -112,6 +115,13 @@ func FetchStat() {
 			if err != nil {
 				log.Default().Panic(err)
 			}
+
+			info,err := dk.Client.ContainerInspect(dk.Context,container.ID)
+			if err != nil {
+				log.Default().Panic(err)
+			}
+
+
 			
 			data := json.NewDecoder(stat.Body)
 			err = data.Decode(&u)
@@ -136,6 +146,7 @@ func FetchStat() {
 			s.MemUsage = ( use  )/Go
 			s.MemLimit = u["memory_stats"].(map[string]any)["limit"].(float64)/Go
 			s.CpuUsage = u["cpu_stats"].(map[string]any)["cpu_usage"].(map[string]any)["total_usage"].(float64)
+			s.CpuQuota = (float64(info.HostConfig.CPUQuota)/float64(info.HostConfig.CPUPeriod))*100
 
 			s.NetRx = u["networks"].(map[string]any)["eth0"].(map[string]any)["rx_bytes"].(float64)/ko
 			s.NetTx = u["networks"].(map[string]any)["eth0"].(map[string]any)["tx_bytes"].(float64)/ko
