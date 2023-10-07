@@ -32,7 +32,7 @@ func main() {
 
 	log.Default().Println("Started !")
 	handler := cors.AllowAll().Handler(mux)
-	err := http.ListenAndServe("localhost:7200",handler)
+	err := http.ListenAndServe("0.0.0.0:7200",handler)
 	if err != nil {
 		log.Default().Fatal(err.Error())
 	}

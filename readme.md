@@ -105,6 +105,25 @@ Delete a container by id
 
 ---
 
+### `PATCH` v1/container
+
+Update memory and cpulimit
+
+#### params
+
+* id
+
+#### body
+
+```
+{
+	"cpulimit"(optional) : [limit in number of cpu (can be decimal)],
+	"memory"(optional): [limit in Go(can be decimal)],
+}
+```
+
+---
+
 ### `GET` v1/container/stats
 
 Retrieve the timestamped stat of the container with id `id` since `since`
