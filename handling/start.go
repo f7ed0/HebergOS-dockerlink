@@ -19,6 +19,7 @@ func StartDocker(resp http.ResponseWriter,req *http.Request) {
 	id,ok := qmap["id"]
 	if(!ok) {
 		resp.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	dk,err := docker.NewDockerHandler()

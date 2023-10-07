@@ -18,7 +18,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/v1/container/",handling.Container)
+	mux.HandleFunc("/v1/container",handling.Container)
 	mux.HandleFunc("/v1/container/stats",handling.Stats)
 	mux.HandleFunc("/v1/container/start",handling.StartDocker)
 	mux.HandleFunc("/v1/container/stop",handling.StopDocker)

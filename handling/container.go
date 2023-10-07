@@ -20,6 +20,9 @@ func Container(resp http.ResponseWriter,req *http.Request) {
 	case http.MethodDelete:
 		containerreq.ContainerDelete(resp,req)
 		return
+	case http.MethodPatch:
+		containerreq.ContainerPatch(resp,req)
+		return
 	}
 	resp.WriteHeader(http.StatusMethodNotAllowed)
 	return
