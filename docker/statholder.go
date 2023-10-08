@@ -113,12 +113,14 @@ func FetchStat() {
 		for _,container := range containers {
 			stat,err := dk.Client.ContainerStats(dk.Context,container.ID,false)
 			if err != nil {
-				log.Default().Panic(err)
+				log.Default().Println(err.Error())
+				continue
 			}
 
 			info,err := dk.Client.ContainerInspect(dk.Context,container.ID)
 			if err != nil {
-				log.Default().Panic(err)
+				log.Default().Println(err.Error())
+				continue
 			}
 
 
