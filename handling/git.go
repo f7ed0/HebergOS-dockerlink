@@ -1,8 +1,9 @@
 package handling
 
 import (
-	"herbergOS/tool"
 	"net/http"
+
+	"github.com/f7ed0/HebergOS-dockerlink/tool"
 )
 
 func Git(resp http.ResponseWriter,req *http.Request) {

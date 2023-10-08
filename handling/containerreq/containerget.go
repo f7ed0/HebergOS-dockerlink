@@ -2,10 +2,11 @@ package containerreq
 
 import (
 	"encoding/json"
-	"herbergOS/docker"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/f7ed0/HebergOS-dockerlink/docker"
 
 	"github.com/docker/docker/api/types"
 )
@@ -69,8 +70,16 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 		}
 
 		result[id] = map[string]any{"name":json.Name,"state":json.State.Status}
-		println(json.Config.Labels["ports"])
+		
+		vers,ok := json.Config.Labels["dockerlink"]
+		if ok {
+			result[id]["dockerlink"] = vers
+		} else {
+			result[id]["dockerlink"] = "not_dockerlink"
+		}
+	
 		result[id]["host_port_root"] = json.Config.Labels["ports"]
+		
 		result[id]["ports"] = json.Config.ExposedPorts
 		
 		if json.State.Running {

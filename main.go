@@ -1,10 +1,11 @@
 package main
 
 import (
-	"herbergOS/docker"
-	"herbergOS/handling"
 	"log"
 	"net/http"
+
+	"github.com/f7ed0/HebergOS-dockerlink/docker"
+	"github.com/f7ed0/HebergOS-dockerlink/handling"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"

@@ -3,12 +3,14 @@ package containerreq
 import (
 	"encoding/json"
 	"fmt"
-	"herbergOS/docker"
 	"log"
 	"math"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/f7ed0/HebergOS-dockerlink/consts"
+	"github.com/f7ed0/HebergOS-dockerlink/docker"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
@@ -145,7 +147,7 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 			WorkingDir: "/var/www/html",
 			Cmd: []string{"sh","-c",command_concat},
 			ExposedPorts: prts,
-			Labels: map[string]string{"ports": strconv.Itoa(ports_int)},
+			Labels: map[string]string{"ports": strconv.Itoa(ports_int),"dockerlink":consts.DOCKERLINK_VERSION},
 			Volumes: map[string]struct{}{
 				"/var/www" : {},
 			},

@@ -3,12 +3,13 @@ package handling
 import (
 	"bytes"
 	"encoding/json"
-	"herbergOS/docker"
 	"io"
 	"log"
 	"net/http"
 	"runtime"
 	"strings"
+
+	"github.com/f7ed0/HebergOS-dockerlink/docker"
 
 	"github.com/docker/docker/api/types"
 )

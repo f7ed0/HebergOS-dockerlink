@@ -1,4 +1,4 @@
-module herbergOS
+module github.com/f7ed0/HebergOS-dockerlink
 
 go 1.20
 

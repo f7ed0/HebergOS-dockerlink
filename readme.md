@@ -33,6 +33,7 @@ type : `application/json`
     "[container_id]" : {
 		"host_port_root": [root of port on host],
         "name" : "[name]",
+		"dockerlink" : [version of dockerlink when the docker has been created or not_dockerlink]
 		"ports": {
 			"[port]/[tcp|udp]": {},
 			...
