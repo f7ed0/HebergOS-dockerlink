@@ -131,7 +131,7 @@ Retrieve the timestamped stat of the container with id `id` since `since`
 #### params
 
 * `id` : the container id that you want to retrieve the stat
-* `since` : Unix seconds timestamp
+* `since` : Unix seconds timestamp (0 for all stats)
 
 #### Response
 
