@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 
 	"github.com/f7ed0/HebergOS-dockerlink/consts"
@@ -130,6 +131,41 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 	// Creating the container
 	j := json.NewEncoder(resp)
 
+	file, err := os.Create(os.Getenv("nginxconfdir")+"/sites-available/"+name+".conf")
+	if err != nil {
+		log.Default().Println(err.Error())
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()))
+		return
+	}
+
+	_,err = fmt.Fprintf(file,consts.NGINX_TEMPLATE,name,ports_int+80,name,ports_int+80)
+	if err != nil {
+		log.Default().Println(err.Error())
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()))
+		return
+	}
+
+	file.Close()
+
+	err = os.Symlink(os.Getenv("nginxconfdir")+"/sites-available/"+name+".conf",os.Getenv("nginxconfdir")+"/sites-enabled/"+name+".conf")
+	if err != nil {
+		log.Default().Println(err.Error())
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()))
+		return
+	}
+
+	cmd := exec.Command("nginx","-t","&&","systemctl","reload","nginx")
+	cmd.Dir = os.Getenv("wettydir")
+	if err := cmd.Run(); err != nil {
+		log.Default().Println(err.Error())
+		resp.WriteHeader(http.StatusAccepted)
+		resp.Write([]byte(err.Error()))
+		return
+	}
+
 	dk,err := docker.NewDockerHandler()
 	if err != nil {
 		log.Default().Printf("ERR : %v\n",err.Error())
@@ -175,23 +211,7 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 		return 
 	}
 
-	file, err := os.Create(os.Getenv("nginxconfdir")+"/sites-available/"+name+".conf")
-	if err != nil {
-		log.Default().Println(err.Error())
-		resp.WriteHeader(http.StatusPreconditionFailed)
-		resp.Write([]byte(err.Error()))
-		return
-	}
-
-	_,err = fmt.Fprintf(file,consts.NGINX_TEMPLATE,name,ports_int+80,name,ports_int+80)
-	if err != nil {
-		log.Default().Println(err.Error())
-		resp.WriteHeader(http.StatusPreconditionFailed)
-		resp.Write([]byte(err.Error()))
-		return
-	}
-
-	file.Close()
+	
 
 	resp.Header().Set("Content-Type", "application/json")
 
