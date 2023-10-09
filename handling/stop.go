@@ -3,7 +3,6 @@ package handling
 import (
 	"log"
 	"net/http"
-	"os"
 	"os/exec"
 
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
@@ -73,7 +72,6 @@ func StopDocker(resp http.ResponseWriter,req *http.Request) {
 	}
 
 	cmd := exec.Command("screen","-X","-S",info.Name+"wettyssh","quit")
-	cmd.Dir = os.Getenv("wettydir")
 	if err := cmd.Run(); err != nil {
 		log.Default().Println(err.Error())
 		resp.WriteHeader(http.StatusAccepted)
