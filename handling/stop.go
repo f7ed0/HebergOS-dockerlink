@@ -71,6 +71,8 @@ func StopDocker(resp http.ResponseWriter,req *http.Request) {
 		return
 	}
 
+	docker.Sh.Wipe(id[0])
+
 	cmd := exec.Command("screen","-X","-S",info.Name+"wettyssh","quit")
 	if err := cmd.Run(); err != nil {
 		log.Default().Println(err.Error())

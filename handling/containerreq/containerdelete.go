@@ -47,5 +47,7 @@ func ContainerDelete(resp http.ResponseWriter,req *http.Request) {
 		return
 	}
 
+	docker.Sh.Wipe(id[0])
+
 	resp.WriteHeader(http.StatusNoContent)
 }
