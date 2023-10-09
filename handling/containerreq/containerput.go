@@ -155,7 +155,8 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 		if !(cmd.ProcessState.ExitCode() == 1) {
 			log.Default().Println(err.Error()+"@ ln -s")
 			resp.WriteHeader(http.StatusPreconditionFailed)
-			resp.Write([]byte(err.Error()))
+			x,err := cmd.Output()
+			resp.Write([]byte(err.Error()+string(x)))
 			return
 		}
 	}
