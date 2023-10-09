@@ -149,19 +149,20 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 
 	file.Close()
 
-	err = os.Symlink(os.Getenv("nginxconfdir")+"/sites-available/"+name+".conf",os.Getenv("nginxconfdir")+"/sites-enabled/"+name+".conf")
-	if err != nil {
+	cmd := exec.Command("ln","-s",os.Getenv("nginxconfdir")+"/sites-available/"+name+".conf",os.Getenv("nginxconfdir")+"/sites-enabled/"+name+".conf")
+	cmd.Dir = os.Getenv("wettydir")
+	if err := cmd.Run(); err != nil {
 		log.Default().Println(err.Error())
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()))
 		return
 	}
 
-	cmd := exec.Command("nginx","-t","&&","systemctl","reload","nginx")
+	cmd = exec.Command("nginx","-t","&&","systemctl","reload","nginx")
 	cmd.Dir = os.Getenv("wettydir")
 	if err := cmd.Run(); err != nil {
 		log.Default().Println(err.Error())
-		resp.WriteHeader(http.StatusAccepted)
+		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()))
 		return
 	}
