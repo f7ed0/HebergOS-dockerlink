@@ -165,7 +165,9 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 	if err := cmd.Run(); err != nil {
 		log.Default().Println(err.Error()+"@ nginx -t && systemctl reload nginx")
 		resp.WriteHeader(http.StatusPreconditionFailed)
-		resp.Write([]byte(err.Error()))
+		l := []byte{}
+		cmd.Stderr.Write(l)
+		resp.Write([]byte(err.Error() +"\n"+string(l)))
 		return
 	}
 
