@@ -39,9 +39,9 @@ func StopDocker(resp http.ResponseWriter,req *http.Request) {
 		return
 	}
 
-	if info.State.Running {
+	if !info.State.Running {
 		resp.WriteHeader(http.StatusNotAcceptable)
-		resp.Write([]byte("Already running"))
+		resp.Write([]byte("Already stopped"))
 		return
 	}
 
