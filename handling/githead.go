@@ -3,6 +3,7 @@ package handling
 import (
 	"net/http"
 
+	"github.com/f7ed0/HebergOS-dockerlink/docker"
 	"github.com/f7ed0/HebergOS-dockerlink/tool"
 )
 
@@ -20,6 +21,29 @@ func gitHeadGet(resp http.ResponseWriter, req *http.Request) {
 	id,ok := qmap["id"]
 	if(!ok) {
 		resp.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	dk,err := docker.NewDockerHandler()
+
+	info,err := dk.Client.ContainerInspect(dk.Context,id[0])
+
+	if err != nil {
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()))
+		return
+	}
+
+	dkl_version,ok := info.Config.Labels["dockerlink"]
+	if !ok {
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte("this docker has not been created with dockerlink"))
+		return
+	}
+
+	if !tool.VersionCheck(dkl_version,"v0.0",tool.VersionSup) {
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte("this docker has not been created with dockerlink or is too old"))
 		return
 	}
 

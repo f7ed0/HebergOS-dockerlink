@@ -28,7 +28,7 @@ const STAT_STRING string = `  "%v" : {
 	}
   }`
 
-const LASTING_TIME int64 = 18000 // 30 minutes
+const LASTING_TIME int64 = 18000 // 5 hours (300 minutes)
 
 type StatHolder map[string]map[int64]*Stat
 
@@ -148,7 +148,7 @@ func FetchStat() {
 			}
 
 			s := new(Stat)
-			s.MemUsage = ( use  )/Go
+			s.MemUsage = ( use )/Go
 			s.MemLimit = u["memory_stats"].(map[string]any)["limit"].(float64)/Go
 			s.CpuUsage = u["cpu_stats"].(map[string]any)["cpu_usage"].(map[string]any)["total_usage"].(float64)
 			s.CpuQuota = (float64(info.HostConfig.CPUQuota)/float64(info.HostConfig.CPUPeriod))*100
