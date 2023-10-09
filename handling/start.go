@@ -3,8 +3,10 @@ package handling
 import (
 	"log"
 	"net/http"
+	"os/exec"
 
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
+	"github.com/f7ed0/HebergOS-dockerlink/tool"
 
 	"github.com/docker/docker/api/types"
 )
@@ -30,6 +32,27 @@ func StartDocker(resp http.ResponseWriter,req *http.Request) {
 		return
 	}
 
+	info,err := dk.Client.ContainerInspect(dk.Context,id[0])
+
+	if err != nil {
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()))
+		return
+	}
+
+	dkl_version,ok := info.Config.Labels["dockerlink"]
+	if !ok {
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte("this docker has not been created with dockerlink"))
+		return
+	}
+
+	if !tool.VersionCheck(dkl_version,"v0.0",tool.VersionSup) {
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte("this docker has not been created with dockerlink or is too old"))
+		return
+	}
+
 	err = dk.Client.ContainerStart(dk.Context,id[0],types.ContainerStartOptions{})
 	if err != nil {
 		log.Default().Println(err.Error())
@@ -38,7 +61,12 @@ func StartDocker(resp http.ResponseWriter,req *http.Request) {
 		resp.Write([]byte(err.Error()))
 		return
 	}
-	
+
+	cmd := exec.Command("screen","-dmS",)
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+		
 	resp.WriteHeader(http.StatusNoContent)
 	return
 }
