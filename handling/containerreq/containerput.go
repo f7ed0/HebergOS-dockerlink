@@ -163,11 +163,12 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 
 	cmd = exec.Command("/usr/sbin/nginx","-t","&&","systemctl","reload","nginx")
 	cmd.Dir = os.Getenv("wettydir")
-	if x,err := cmd.Output(); err != nil {
-		log.Default().Println(err.Error()+"@ nginx -t && systemctl reload nginx")
-		log.Default().Println(x)
+	f,_ := os.Create("debug.txt")
+	cmd.Stdout = f
+	if err := cmd.Run(); err != nil {
+		log.Default().Println(err.Error()+" @ nginx -t && systemctl reload nginx")
 		resp.WriteHeader(http.StatusPreconditionFailed)
-		resp.Write([]byte(err.Error() +"\n"+string(x)))
+		resp.Write([]byte(err.Error()+" @ nginx -t && systemctl reload nginx"))
 		return
 	}
 
