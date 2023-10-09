@@ -175,7 +175,7 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 		return 
 	}
 
-	file, err := os.Create(os.Getenv("nginxconfdir")+"/sites_available/"+name+".conf")
+	file, err := os.Create(os.Getenv("nginxconfdir")+"/sites-available/"+name+".conf")
 	if err != nil {
 		log.Default().Println(err.Error())
 		resp.WriteHeader(http.StatusPreconditionFailed)
