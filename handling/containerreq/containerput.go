@@ -150,7 +150,6 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 	file.Close()
 
 	cmd := exec.Command("ln","-s",os.Getenv("nginxconfdir")+"/sites-available/"+name+".conf",os.Getenv("nginxconfdir")+"/sites-enabled/"+name+".conf")
-	cmd.Dir = os.Getenv("wettydir")
 	if err := cmd.Run(); err != nil {
 		if !(cmd.ProcessState.ExitCode() == 1) {
 			log.Default().Println(err.Error()+"@ ln -s")
@@ -161,18 +160,21 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 		}
 	}
 
-	cmd = exec.Command("/usr/sbin/nginx","-t","&&","systemctl","reload","nginx")
-	cmd.Dir = os.Getenv("wettydir")
-	f,_ := os.Create("debug.txt")
-	defer f.Close()
-	cmd.Stderr = f
-	
+	cmd = exec.Command("/usr/sbin/nginx","-t")
 	if err := cmd.Run(); err != nil {
-		log.Default().Println(err.Error()+" @ nginx -t && systemctl reload nginx")
+		log.Default().Println(err.Error()+" @ nginx -t")
 		resp.WriteHeader(http.StatusPreconditionFailed)
-		resp.Write([]byte(err.Error()+" @ nginx -t && systemctl reload nginx"))
+		resp.Write([]byte(err.Error()+" @ nginx -t"))
 		return
 	}
+	cmd = exec.Command("systemctl","reload","nginx")
+	if err := cmd.Run(); err != nil {
+		log.Default().Println(err.Error()+" @ systemctl reload nginx")
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()+" @ systemctl reload nginx"))
+		return
+	}
+	
 
 	dk,err := docker.NewDockerHandler()
 	if err != nil {
