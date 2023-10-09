@@ -205,9 +205,9 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 				CPUQuota: int64(cpu*10000),
 				CPUPeriod: 10000,
 			},
+			Links: []string{os.Getenv("mysql_docker_name")},
 		},
 		&network.NetworkingConfig{
-
 		},
 		&v1.Platform{
 			OS: "linux",
