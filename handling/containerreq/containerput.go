@@ -175,6 +175,24 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 		return 
 	}
 
+	file, err := os.Create(os.Getenv("nginxconfdir")+"/sites_available/"+name+".conf")
+	if err != nil {
+		log.Default().Println(err.Error())
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()))
+		return
+	}
+
+	_,err = fmt.Fprintf(file,consts.NGINX_TEMPLATE,name,ports_int+80,name,ports_int+80)
+	if err != nil {
+		log.Default().Println(err.Error())
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()))
+		return
+	}
+
+	file.Close()
+
 	resp.Header().Set("Content-Type", "application/json")
 
 	j.Encode(client)
