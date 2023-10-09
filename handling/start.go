@@ -3,6 +3,7 @@ package handling
 import (
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"strconv"
 
@@ -38,6 +39,12 @@ func StartDocker(resp http.ResponseWriter,req *http.Request) {
 	if err != nil {
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()))
+		return
+	}
+
+	if info.State.Running {
+		resp.WriteHeader(http.StatusNotAcceptable)
+		resp.Write([]byte("Already running"))
 		return
 	}
 
@@ -77,11 +84,11 @@ func StartDocker(resp http.ResponseWriter,req *http.Request) {
 		return
 	}
 
-	cmd := exec.Command("screen","-dmS",info.Name,"/usr/bin/node",".","--ssh-host=localhost","--ssh-port="+strconv.Itoa(intport+22),"--port="+strconv.Itoa(intport),"--force-ssh")
-	cmd.Dir = "/home/admin/wetty"
+	cmd := exec.Command("screen","-dmS",info.Name+"wettyssh","/usr/bin/node",".","--ssh-host=localhost","--ssh-port="+strconv.Itoa(intport+22),"--port="+strconv.Itoa(intport),"--force-ssh")
+	cmd.Dir = os.Getenv("wettydir")
 	if err := cmd.Run(); err != nil {
 		log.Default().Println(err.Error())
-		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.WriteHeader(http.StatusAccepted)
 		resp.Write([]byte(err.Error()))
 		return
 	}
