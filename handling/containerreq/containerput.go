@@ -139,7 +139,7 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 		return
 	}
 
-	_,err = fmt.Fprintf(file,consts.NGINX_TEMPLATE,name,ports_int+80,name,ports_int+80)
+	_,err = fmt.Fprintf(file,consts.NGINX_TEMPLATE,name,ports_int+80,name,ports_int)
 	if err != nil {
 		log.Default().Println(err.Error())
 		resp.WriteHeader(http.StatusPreconditionFailed)
