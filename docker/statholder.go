@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -30,6 +31,8 @@ const STAT_STRING string = `  "%v" : {
 
 const LASTING_TIME int64 = 18000 // 5 hours (300 minutes)
 
+
+
 type StatHolder map[string]map[int64]*Stat
 
 type Stat struct {
@@ -46,19 +49,23 @@ type Stat struct {
 	NetDTx 		float64
 }
 
+var stat_holder *sync.RWMutex = new(sync.RWMutex)
 var Sh StatHolder = StatHolder{}
 
 func (s *StatHolder) Add(timestamp int64, container_id string, new *Stat) {
+	stat_holder.Lock()
 	_,ok := (*s)[container_id]
 	if !ok {
 		(*s)[container_id] = map[int64]*Stat{}
 	}
 	(*s)[container_id][timestamp] = new
 	s.DestroyOlder(timestamp,container_id)
+	stat_holder.Unlock()
 }
 
 func (s StatHolder) Export(container_id string,since int64) string {
 	ret := "{\n"
+	stat_holder.RLock()
 	for key,val := range s[container_id] {
 		if(key > since) {
 			ret += fmt.Sprintf(
@@ -75,10 +82,13 @@ func (s StatHolder) Export(container_id string,since int64) string {
 			) + ",\n"
 		}
 	}
+	stat_holder.RUnlock()
 	return ret[:len(ret)-2] + "\n}"
+	
 }
 
 func (s *StatHolder) DestroyOlder(timestamp int64, container_id string) {
+	stat_holder.Lock()
 	_,ok := (*s)[container_id]
 	if !ok {
 		return
@@ -88,6 +98,13 @@ func (s *StatHolder) DestroyOlder(timestamp int64, container_id string) {
 			delete((*s)[container_id],key)
 		}
 	}
+	stat_holder.Unlock()
+}
+
+func (s *StatHolder) Wipe(container_id string) {
+	stat_holder.Lock()
+	delete((*s),container_id)
+	stat_holder.Unlock()
 }
 
 func FetchStat() {
