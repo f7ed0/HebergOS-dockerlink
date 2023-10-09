@@ -62,9 +62,12 @@ func StartDocker(resp http.ResponseWriter,req *http.Request) {
 		return
 	}
 
-	cmd := exec.Command("screen","-dmS",)
+	cmd := exec.Command("NODE_ENV=production","screen","-dmS",info.Name+"ssh","cd /home/admin/wetty && node . --ssh-host=localhost --ssh-port=10022 --port=10000")
 	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
+		log.Default().Println(err.Error())
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()))
+		return
 	}
 		
 	resp.WriteHeader(http.StatusNoContent)
