@@ -59,8 +59,8 @@ func (s *StatHolder) Add(timestamp int64, container_id string, new *Stat) {
 		(*s)[container_id] = map[int64]*Stat{}
 	}
 	(*s)[container_id][timestamp] = new
-	s.DestroyOlder(timestamp,container_id)
 	stat_holder.Unlock()
+	s.DestroyOlder(timestamp,container_id)	
 }
 
 func (s StatHolder) Export(container_id string,since int64) string {
