@@ -3,6 +3,8 @@ package containerreq
 import (
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
 
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
 
@@ -32,6 +34,40 @@ func ContainerDelete(resp http.ResponseWriter,req *http.Request) {
 		log.Default().Println(err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		resp.Write([]byte(err.Error()))
+		return
+	}
+
+	info,err := dk.Client.ContainerInspect(dk.Context,id[0])
+	if err != nil {
+		log.Default().Println(err.Error())
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()))
+		return
+	}
+
+	cmd := exec.Command("rm",os.Getenv("nginxconfdir")+"/sites-available/"+info.Name+".conf",os.Getenv("nginxconfdir")+"/sites-enabled/"+info.Name+".conf")
+	if err := cmd.Run(); err != nil {
+		if !(cmd.ProcessState.ExitCode() == 1) {
+			log.Default().Println(err.Error()+"@ rm")
+			resp.WriteHeader(http.StatusPreconditionFailed)
+			
+			resp.Write([]byte(err.Error()))
+			return
+		}
+	}
+
+	cmd = exec.Command("/usr/sbin/nginx","-t")
+	if err := cmd.Run(); err != nil {
+		log.Default().Println(err.Error()+" @ nginx -t")
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()+" @ nginx -t"))
+		return
+	}
+	cmd = exec.Command("systemctl","reload","nginx")
+	if err := cmd.Run(); err != nil {
+		log.Default().Println(err.Error()+" @ systemctl reload nginx")
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()+" @ systemctl reload nginx"))
 		return
 	}
 
