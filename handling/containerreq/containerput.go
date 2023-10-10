@@ -208,9 +208,6 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 			Links: []string{os.Getenv("mysql_docker_name")},
 		},
 		&network.NetworkingConfig{
-			EndpointsConfig: map[string]*network.EndpointSettings{
-				os.Getenv("db_network"): {}, // Add the container to the "db" network
-			},
 		},
 		&v1.Platform{
 			OS: "linux",
