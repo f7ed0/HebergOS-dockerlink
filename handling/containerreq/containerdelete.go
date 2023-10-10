@@ -7,6 +7,7 @@ import (
 	"os/exec"
 
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
+	"github.com/f7ed0/HebergOS-dockerlink/tool"
 
 	"github.com/docker/docker/api/types"
 )
@@ -42,6 +43,25 @@ func ContainerDelete(resp http.ResponseWriter,req *http.Request) {
 		log.Default().Println(err.Error())
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()))
+		return
+	}
+
+	dkl_version,ok := info.Config.Labels["dockerlink"]
+	if !ok {
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte("this docker has not been created with dockerlink"))
+		return
+	}
+
+	if !tool.VersionCheck(dkl_version,"v0.0",tool.VersionSup) {
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte("this docker has not been created with dockerlink or is too old"))
+		return
+	}
+
+	if info.State.Running {
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte("docker needs to be stopped before deleting it"))
 		return
 	}
 
