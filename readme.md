@@ -30,19 +30,25 @@ type : `application/json`
 
 ```
 {
-    "[container_id]" : {
-		"host_port_root": [root of port on host],
-        "name" : "[name]",
-		"dockerlink" : [version of dockerlink when the docker has been created or not_dockerlink]
-		"ports": {
-			"[port]/[tcp|udp]": {},
-			...
+	"error" : {
+		"[container_id]" : "[docker error message]",
+		...
+	}
+	"success" : {
+		"[container_id]" : {
+			"host_port_root": [root of port on host],
+			"name" : "[name]",
+			"dockerlink" : [version of dockerlink when the docker has been created or not_dockerlink]
+			"ports": {
+				"[port]/[tcp|udp]": {},
+				...
+			},
+			"state": "[running|exited|paused|restarting|removing|dead|created]
+			"exit_code" : [value if exited]
+			"started_at" : [unix timestamp if running]
 		},
-        "state": "[running|exited|paused|restarting|removing|dead|created]
-		"exit_code" : [value if exited]
-		"started_at" : [unix timestamp if running]
-    },
-	...
+		...
+	}
 }
 ```
 
@@ -183,6 +189,20 @@ Stop the container of id `id`
 #### params
 
 * `id` : the container id that you want to stop
+
+#### Response
+
+`plain\text` or `no content`
+
+---
+
+### `POST` v1/container/start
+
+restart the container of id `id`
+
+#### params
+
+* `id` : the container id that you want to restart
 
 #### Response
 

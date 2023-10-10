@@ -23,6 +23,7 @@ func main() {
 	mux.HandleFunc("/v1/container/stats",handling.Stats)
 	mux.HandleFunc("/v1/container/start",handling.StartDocker)
 	mux.HandleFunc("/v1/container/stop",handling.StopDocker)
+	mux.HandleFunc("/v1/container/restart",handling.RestartDocker)
 
 	mux.HandleFunc("/v1/git",handling.Git)
 	mux.HandleFunc("/v1/git/head",handling.GitHead)
