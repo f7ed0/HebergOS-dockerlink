@@ -54,29 +54,29 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 
 	log.Default().Println(ids)
 
-	result := map[string]map[string]any{}
+	result := map[string]map[string]any{"success" : {}, "error": {}}
 	for _,id := range ids {
 		json,err := dk.Client.ContainerInspect(dk.Context,id)
 		if err != nil {
 			log.Default().Printf("ERR : %v\n",err.Error())
-			result[id] = nil
+			result["error"][id] = err.Error()
 		} else {
 			if  has_run && json.State.Running != running {
 				continue
 			}
 	
-			result[id] = map[string]any{"name":json.Name,"state":json.State.Status}
+			result["success"][id] = map[string]any{"name":json.Name,"state":json.State.Status}
 			
 			vers,ok := json.Config.Labels["dockerlink"]
 			if ok {
-				result[id]["dockerlink"] = vers
+				result["success"][id].(map[string]any)["dockerlink"] = vers
 			} else {
-				result[id]["dockerlink"] = "not_dockerlink"
+				result["success"][id].(map[string]any)["dockerlink"] = "not_dockerlink"
 			}
 		
-			result[id]["host_port_root"] = json.Config.Labels["ports"]
+			result["success"][id].(map[string]any)["host_port_root"] = json.Config.Labels["ports"]
 			
-			result[id]["ports"] = json.Config.ExposedPorts
+			result["success"][id].(map[string]any)["ports"] = json.Config.ExposedPorts
 			
 			if json.State.Running {
 				t,err := time.Parse(time.RFC3339Nano,json.State.StartedAt)
@@ -86,9 +86,9 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 					return
 				}
 		
-				result[id]["started_at"] = t.Unix()
+				result["success"][id].(map[string]any)["started_at"] = t.Unix()
 			} else {
-				result[id]["exit_code"] = json.State.ExitCode
+				result["success"][id].(map[string]any)["exit_code"] = json.State.ExitCode
 			}
 		}
 	}
