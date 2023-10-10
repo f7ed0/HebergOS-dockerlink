@@ -84,7 +84,7 @@ func StartDocker(resp http.ResponseWriter,req *http.Request) {
 		return
 	}
 
-	cmd := exec.Command("screen","-dmS",info.Name+"wettyssh","/usr/bin/node",".","--ssh-host=localhost","--ssh-port="+strconv.Itoa(intport+22),"--port="+strconv.Itoa(intport),"--force-ssh")
+	cmd := exec.Command("screen","-dmS",info.Name+"wettyssh","/usr/bin/node",".","--ssh-host=localhost","--ssh-port="+strconv.Itoa(intport+22),"--port="+strconv.Itoa(intport),"--force-ssh","--allow-iframe")
 	cmd.Dir = os.Getenv("wettydir")
 	if err := cmd.Run(); err != nil {
 		log.Default().Println(err.Error())
