@@ -60,39 +60,37 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 		if err != nil {
 			log.Default().Printf("ERR : %v\n",err.Error())
 			result[id] = nil
-			return
-		}
-		
-		if  has_run && json.State.Running != running {
-			continue
-		}
-
-		result[id] = map[string]any{"name":json.Name,"state":json.State.Status}
-		
-		vers,ok := json.Config.Labels["dockerlink"]
-		if ok {
-			result[id]["dockerlink"] = vers
 		} else {
-			result[id]["dockerlink"] = "not_dockerlink"
-		}
-	
-		result[id]["host_port_root"] = json.Config.Labels["ports"]
-		
-		result[id]["ports"] = json.Config.ExposedPorts
-		
-		if json.State.Running {
-			t,err := time.Parse(time.RFC3339Nano,json.State.StartedAt)
-			if err != nil {
-				log.Default().Printf("ERR : %v\n",err.Error())
-				resp.WriteHeader(http.StatusInternalServerError)
-				return
+			if  has_run && json.State.Running != running {
+				continue
 			}
 	
-			result[id]["started_at"] = t.Unix()
-		} else {
-			result[id]["exit_code"] = json.State.ExitCode
-		}
+			result[id] = map[string]any{"name":json.Name,"state":json.State.Status}
+			
+			vers,ok := json.Config.Labels["dockerlink"]
+			if ok {
+				result[id]["dockerlink"] = vers
+			} else {
+				result[id]["dockerlink"] = "not_dockerlink"
+			}
 		
+			result[id]["host_port_root"] = json.Config.Labels["ports"]
+			
+			result[id]["ports"] = json.Config.ExposedPorts
+			
+			if json.State.Running {
+				t,err := time.Parse(time.RFC3339Nano,json.State.StartedAt)
+				if err != nil {
+					log.Default().Printf("ERR : %v\n",err.Error())
+					resp.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+		
+				result[id]["started_at"] = t.Unix()
+			} else {
+				result[id]["exit_code"] = json.State.ExitCode
+			}
+		}
 	}
 
 	resp.Header().Set("Content-Type", "application/json")
