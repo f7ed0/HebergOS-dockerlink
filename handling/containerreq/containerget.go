@@ -28,8 +28,6 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 	has_run := false
 
 	if !ok {
-		
-
 		r,ok := qmap["running"]
 
 		if ok {
@@ -61,7 +59,7 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 		json,err := dk.Client.ContainerInspect(dk.Context,id)
 		if err != nil {
 			log.Default().Printf("ERR : %v\n",err.Error())
-			resp.WriteHeader(http.StatusInternalServerError)
+			result[id] = nil
 			return
 		}
 		
