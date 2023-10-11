@@ -130,7 +130,7 @@ func FetchStat() {
 	ko := math.Pow(2,10)
 	rounds := 0
 	for true {
-		rounds = (rounds+1)%240
+		rounds = (rounds+1)%120
 		t1 = time.Now()
 		containers,err := dk.Client.ContainerList(dk.Context,types.ContainerListOptions{
 			All : true,
