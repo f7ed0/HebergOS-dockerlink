@@ -134,6 +134,7 @@ Update memory and cpulimit
 ### `GET` v1/container/stats
 
 Retrieve the timestamped stat of the container with id `id` since `since`
+(returns stats even if the container is down (all stats to 0 even the memory and cpu limit))
 
 #### params
 

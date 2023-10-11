@@ -29,7 +29,9 @@ const STAT_STRING string = `  "%v" : {
 	}
   }`
 
-const LASTING_TIME int64 = 18000 // 5 hours (300 minutes)
+const LASTING_TIME_DEFAULT int64 = 14400 // 4 hours (240 minutes)
+const LASTING_TIME_DAY int64 = 86400 // 1 day
+const LASTING_TIME_WEEK int64 = 604800 // 1 week
 
 
 
@@ -47,6 +49,9 @@ type Stat struct {
 	NetTx 		float64
 	NetDRx 		float64
 	NetDTx 		float64
+
+	KeepForDay	bool
+	KeepForWeek	bool
 }
 
 var stat_holder *sync.RWMutex = new(sync.RWMutex)
@@ -93,8 +98,12 @@ func (s *StatHolder) DestroyOlder(timestamp int64, container_id string) {
 	if !ok {
 		return
 	}
-	for key :=  range (*s)[container_id] {
-			if key < timestamp - LASTING_TIME {
+	for key,val :=  range (*s)[container_id] {
+		if !val.KeepForDay && key < timestamp - LASTING_TIME_DEFAULT {
+			delete((*s)[container_id],key)
+		} else if !val.KeepForWeek && key < timestamp - LASTING_TIME_DAY{
+			delete((*s)[container_id],key)
+		} else if key < timestamp - LASTING_TIME_WEEK {
 			delete((*s)[container_id],key)
 		}
 	}
@@ -119,20 +128,25 @@ func FetchStat() {
 	u := map[string]any{}
 	Go := math.Pow(2,30)
 	ko := math.Pow(2,10)
+	rounds := 0
 	for true {
+		rounds = (rounds+1)%240
 		t1 = time.Now()
-		containers,err := dk.Client.ContainerList(dk.Context,types.ContainerListOptions{})
+		containers,err := dk.Client.ContainerList(dk.Context,types.ContainerListOptions{
+			All : true,
+		})
 
 		if err != nil {
 			log.Default().Panic(err)
 		}
 
 		for _,container := range containers {
-			stat,err := dk.Client.ContainerStats(dk.Context,container.ID,false)
-			if err != nil {
-				log.Default().Println(err.Error())
-				continue
-			}
+			s := new(Stat)
+
+			s.KeepForDay = (rounds%12 == 0)
+			s.KeepForWeek = (rounds%120 == 0)
+
+			var now time.Time
 
 			info,err := dk.Client.ContainerInspect(dk.Context,container.ID)
 			if err != nil {
@@ -140,60 +154,82 @@ func FetchStat() {
 				continue
 			}
 
+			now = time.Now()
 
-			
-			data := json.NewDecoder(stat.Body)
-			err = data.Decode(&u)
-			if err != nil {
-				log.Default().Panic(err)
-			}
-			stat.Body.Close()
+			s.MemUsage = 0
+			s.MemLimit = 0
+			s.CpuUsage = 0
+			s.CpuQuota = 0
 
-			time,err :=  time.Parse(time.RFC3339Nano,u["read"].(string))
-			if err != nil {
-				log.Default().Panic(err)
-			}
+			s.NetRx = 0
+			s.NetTx = 0
 
-			//log.Default().Println(u["networks"])
-			if(u == nil) {
-				continue
-			}
+			s.CpuPercent = 0
 
-			use,ok := (u["memory_stats"].(map[string]any)["usage"].(float64))
-			if !ok {
-				continue
-			}
+			s.NetDRx = 0
+			s.NetDTx = 0
 
-			s := new(Stat)
-			s.MemUsage = ( use )/Go
-			s.MemLimit = u["memory_stats"].(map[string]any)["limit"].(float64)/Go
-			s.CpuUsage = u["cpu_stats"].(map[string]any)["cpu_usage"].(map[string]any)["total_usage"].(float64)
-			s.CpuQuota = (float64(info.HostConfig.CPUQuota)/float64(info.HostConfig.CPUPeriod))*100
+			if info.State.Running {
+				stat,err := dk.Client.ContainerStats(dk.Context,container.ID,true)
+				if err == nil {
+					data := json.NewDecoder(stat.Body)
+					err = data.Decode(&u)
+					if err != nil {
+						log.Default().Panic(err)
+					}
+					stat.Body.Close()
 
-			s.NetRx = u["networks"].(map[string]any)["eth0"].(map[string]any)["rx_bytes"].(float64)/ko
-			s.NetTx = u["networks"].(map[string]any)["eth0"].(map[string]any)["tx_bytes"].(float64)/ko
-			
-			// Calcul du CpuPercentage
-			l,ok := lasts[container.ID]
-			t,ok2 := lasts_t[container.ID]
-			if ok && ok2 {
-				s.CpuPercent = ((s.CpuUsage - l.CpuUsage)/float64((time.UnixNano() - t)))*100
-			}
+					if(u == nil) {
+						log.Default().Panic("u is nil")
+					}
 
-			// Calculs des NetD
-			if ok {
-				s.NetDRx = s.NetRx - l.NetRx
-				s.NetDTx = s.NetTx - l.NetTx
-			}
+					now,err =  time.Parse(time.RFC3339Nano,u["read"].(string))
+					if err != nil {
+						log.Default().Panic(err)
+					}
 
-			Sh.Add(time.Unix(),container.ID,s)
+					//log.Default().Println(u["networks"])
+					
+
+					use,ok := (u["memory_stats"].(map[string]any)["usage"].(float64))
+					if !ok {
+						continue
+					}
+
+					
+					s.MemUsage = ( use )/Go
+					s.MemLimit = u["memory_stats"].(map[string]any)["limit"].(float64)/Go
+					s.CpuUsage = u["cpu_stats"].(map[string]any)["cpu_usage"].(map[string]any)["total_usage"].(float64)
+					s.CpuQuota = (float64(info.HostConfig.CPUQuota)/float64(info.HostConfig.CPUPeriod))*100
+
+					s.NetRx = u["networks"].(map[string]any)["eth0"].(map[string]any)["rx_bytes"].(float64)/ko
+					s.NetTx = u["networks"].(map[string]any)["eth0"].(map[string]any)["tx_bytes"].(float64)/ko
+					
+					// Calcul du CpuPercentage
+					l,ok := lasts[container.ID]
+					t,ok2 := lasts_t[container.ID]
+					if ok && ok2 {
+						s.CpuPercent = ((s.CpuUsage - l.CpuUsage)/float64((now.UnixNano() - t)))*100
+					}
+
+					// Calculs des NetD
+					if ok {
+						s.NetDRx = s.NetRx - l.NetRx
+						s.NetDTx = s.NetTx - l.NetTx
+					}
+				}
+
+				
+			}			
+
+			Sh.Add(now.Unix(),container.ID,s)
 
 			lasts[container.ID] = s
-			lasts_t[container.ID] = time.UnixNano()
+			lasts_t[container.ID] = now.UnixNano()
 		} 
 		t2 = time.Now()
 
-		//log.Default().Println(float64(t2.UnixMilli() - t1.UnixMilli())/1000)
+		log.Default().Printf("Statloop took %v seconds.",float64(t2.UnixMilli() - t1.UnixMilli())/1000)
 		time.Sleep(10*time.Second - time.Duration(t2.UnixNano() - t1.UnixNano()))
 	}
 }
