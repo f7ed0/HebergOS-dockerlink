@@ -145,7 +145,7 @@ func FetchStat() {
 	ko := math.Pow(2,10)
 	rounds := 0
 	for true {
-		rounds = (rounds+1)%120
+		rounds = (rounds+1)%80
 		t1 = time.Now()
 		containers,err := dk.Client.ContainerList(dk.Context,types.ContainerListOptions{
 			All : true,
@@ -158,8 +158,8 @@ func FetchStat() {
 		for _,container := range containers {
 			s := new(Stat)
 
-			s.KeepForDay = (rounds%12 == 0)
-			s.KeepForWeek = (rounds%120 == 0)
+			s.KeepForDay = (rounds%8 == 0)
+			s.KeepForWeek = (rounds == 0)
 
 			var now time.Time
 
@@ -258,6 +258,6 @@ func FetchStat() {
 		t2 = time.Now()
 
 		log.Default().Printf("Statloop took %v seconds.",float64(t2.UnixMilli() - t1.UnixMilli())/1000)
-		time.Sleep(10*time.Second - time.Duration(t2.UnixNano() - t1.UnixNano()))
+		time.Sleep(15*time.Second - time.Duration(t2.UnixNano() - t1.UnixNano()))
 	}
 }
