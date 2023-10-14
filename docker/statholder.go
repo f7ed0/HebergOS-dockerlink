@@ -100,7 +100,10 @@ func (s StatHolder) Export(container_id string,since int64,scale int) string {
 		}
 	}
 	stat_holder.RUnlock()
-	return ret[:len(ret)-2] + "\n}"
+	if(len(ret) > 2){
+		ret = ret[:len(ret)-2]
+	}
+	return ret + "\n}"
 	
 }
 
