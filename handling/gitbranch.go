@@ -33,7 +33,7 @@ func gitBranchGet(resp http.ResponseWriter,req *http.Request) {
 		path = []string{""}
 	}
 
-	tool.CmdReporter(resp,req,id[0],[]string{"git","rev-parse","--abbrev-ref","HEAD"},ok,path[0])
+	tool.CmdReporter(resp,req,id[0],[]string{"git","rev-parse","--abbrev-ref","HEAD"},ok,path[0],"admin")
 }
 
 func gitBranchPost(resp http.ResponseWriter, req *http.Request) {
@@ -56,5 +56,5 @@ func gitBranchPost(resp http.ResponseWriter, req *http.Request) {
 		path = []string{""}
 	}
 
-	tool.CmdReporter(resp,req,id[0],[]string{"git","checkout",branch[0]},ok,path[0])
+	tool.CmdReporter(resp,req,id[0],[]string{"git","checkout",branch[0]},ok,path[0],"admin")
 }

@@ -13,11 +13,11 @@ import (
 	"github.com/docker/docker/api/types"
 )
 
-func CmdReporter(resp http.ResponseWriter,req *http.Request,container_id string,command []string,haspath bool,path string) {
+func CmdReporter(resp http.ResponseWriter,req *http.Request,container_id string,command []string,haspath bool,path string,user string) {
 
 
 	exarg := types.ExecConfig{
-		User : "root",
+		User : user,
 		AttachStderr: true,
 		AttachStdout: true,
 		Cmd: command,

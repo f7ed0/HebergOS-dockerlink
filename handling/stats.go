@@ -28,6 +28,18 @@ func Stats(resp http.ResponseWriter,req *http.Request) {
 		return
 	}
 
+	scale,ok := Qmap["scale"]
+	if(!ok) {
+		resp.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	only := docker.INSTANT_ONLY
+	if (scale[0] == "day"){
+		only = docker.DAY_ONLY
+	} else if (scale[0] == "week") {
+		only = docker.WEEK_ONLY
+	}
+
 	intsince,err := strconv.ParseInt(since[0],10,64)
 	if err != nil {
 		resp.WriteHeader(http.StatusBadRequest)
@@ -36,7 +48,7 @@ func Stats(resp http.ResponseWriter,req *http.Request) {
 
 	resp.Header().Set("Content-Type", "application/json")
 
-	fmt.Fprint(resp,docker.Sh.Export(id[0],intsince))
+	fmt.Fprint(resp,docker.Sh.Export(id[0],intsince,only))
 
 	return
 }

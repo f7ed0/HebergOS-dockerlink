@@ -34,8 +34,7 @@ func gitGet(resp http.ResponseWriter, req *http.Request) {
 		path = []string{""}
 	}
 
-	tool.CmdReporter(resp,req,id[0],[]string{"git","pull"},ok,path[0])
-
+	tool.CmdReporter(resp,req,id[0],[]string{"git","pull"},ok,path[0],"admin")
 }
 
 func gitPut(resp http.ResponseWriter, req *http.Request) {
@@ -53,5 +52,5 @@ func gitPut(resp http.ResponseWriter, req *http.Request) {
 		path = []string{""}
 	}
 
-	tool.CmdReporter(resp,req,id[0],[]string{"git","init"},ok,path[0])
+	tool.CmdReporter(resp,req,id[0],[]string{"git","init"},ok,path[0],"admin")
 }

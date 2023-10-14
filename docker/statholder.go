@@ -33,7 +33,9 @@ const LASTING_TIME_DEFAULT int64 = 14400 // 4 hours (240 minutes)
 const LASTING_TIME_DAY int64 = 86400 // 1 day
 const LASTING_TIME_WEEK int64 = 604800 // 1 week
 
-
+const INSTANT_ONLY = 0
+const DAY_ONLY int = 1
+const WEEK_ONLY int = 2
 
 type StatHolder map[string]map[int64]*Stat
 
@@ -68,11 +70,21 @@ func (s *StatHolder) Add(timestamp int64, container_id string, new *Stat) {
 	s.DestroyOlder(timestamp,container_id)	
 }
 
-func (s StatHolder) Export(container_id string,since int64) string {
+func (s StatHolder) Export(container_id string,since int64,scale int) string {
 	ret := "{\n"
 	stat_holder.RLock()
 	for key,val := range s[container_id] {
 		if(key > since) {
+			t := time.Now().Unix()
+			if(scale == INSTANT_ONLY && key < t - LASTING_TIME_DEFAULT) {
+				continue
+			}
+			if((scale == DAY_ONLY) && (!val.KeepForDay || key < t - LASTING_TIME_DAY)) {
+				continue
+			}
+			if((scale == WEEK_ONLY) && (!val.KeepForWeek || key < t - LASTING_TIME_WEEK)) {
+				continue
+			}
 			ret += fmt.Sprintf(
 				STAT_STRING,
 				key,
