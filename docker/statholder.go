@@ -214,8 +214,12 @@ func FetchStat() {
 					
 					s.MemUsage = ( use )/Go
 					s.MemLimit = u["memory_stats"].(map[string]any)["limit"].(float64)/Go
+
 					s.CpuUsage = u["cpu_stats"].(map[string]any)["cpu_usage"].(map[string]any)["total_usage"].(float64)
 					s.CpuQuota = (float64(info.HostConfig.CPUQuota)/float64(info.HostConfig.CPUPeriod))*100
+					if s.CpuQuota == math.NaN() {
+						s.CpuQuota = 0
+					}
 
 					s.NetRx = u["networks"].(map[string]any)["eth0"].(map[string]any)["rx_bytes"].(float64)/ko
 					s.NetTx = u["networks"].(map[string]any)["eth0"].(map[string]any)["tx_bytes"].(float64)/ko
