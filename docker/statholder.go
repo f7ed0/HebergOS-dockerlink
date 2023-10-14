@@ -217,7 +217,7 @@ func FetchStat() {
 
 					s.CpuUsage = u["cpu_stats"].(map[string]any)["cpu_usage"].(map[string]any)["total_usage"].(float64)
 					s.CpuQuota = (float64(info.HostConfig.CPUQuota)/float64(info.HostConfig.CPUPeriod))*100
-					if s.CpuQuota == math.NaN() {
+					if  math.IsNaN(s.CpuQuota) {
 						s.CpuQuota = 0
 					}
 
