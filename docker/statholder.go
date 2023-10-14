@@ -225,12 +225,21 @@ func FetchStat() {
 					t,ok2 := lasts_t[container.ID]
 					if ok && ok2 {
 						s.CpuPercent = ((s.CpuUsage - l.CpuUsage)/float64((now.UnixNano() - t)))*100
+						if s.CpuPercent < 0 {
+							s.CpuPercent = 0
+						}
 					}
 
 					// Calculs des NetD
 					if ok {
 						s.NetDRx = s.NetRx - l.NetRx
 						s.NetDTx = s.NetTx - l.NetTx
+						if s.NetDRx < 0 {
+							s.NetDRx = 0
+						}
+						if s.NetDTx < 0 {
+							s.NetDTx = 0
+						}
 					}
 				}
 
