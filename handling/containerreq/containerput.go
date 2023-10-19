@@ -174,6 +174,13 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 		resp.Write([]byte(err.Error()+" @ systemctl reload nginx"))
 		return
 	}
+	cmd = exec.Command("certbot","--nginx","-d","ssh."+name+".insash.fr")
+	if err := cmd.Run(); err != nil {
+		log.Default().Println(err.Error()+" @ systemctl reload nginx")
+		resp.WriteHeader(http.StatusPreconditionFailed)
+		resp.Write([]byte(err.Error()+" @ systemctl reload nginx"))
+		return
+	}
 	
 
 	dk,err := docker.NewDockerHandler()
