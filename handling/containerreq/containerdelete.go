@@ -71,8 +71,9 @@ func ContainerDelete(resp http.ResponseWriter,req *http.Request) {
 			res,err2 := cmd.Output()
 			if err2 != nil {
 				logger.Default.Log("ERR",err.Error()+" @ rm")
+			} else {
+				logger.Default.Log("ERR",err.Error()+" @ rm\n"+string(res))
 			}
-			logger.Default.Log("ERR",err.Error()+" @ rm\n"+string(res))
 			resp.WriteHeader(http.StatusPreconditionFailed)
 			
 			resp.Write([]byte(err.Error()+" @ rm"))
@@ -85,8 +86,9 @@ func ContainerDelete(resp http.ResponseWriter,req *http.Request) {
 		res,err2 := cmd.Output()
 		if err2 != nil {
 			logger.Default.Log("ERR",err.Error()+" @ nginx -t")
+		} else {
+			logger.Default.Log("ERR",err.Error()+" @ nginx -t\n"+string(res))
 		}
-		logger.Default.Log("ERR",err.Error()+" @ nginx -t\n"+string(res))
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()+" @ nginx -t"))
 		return
@@ -96,8 +98,9 @@ func ContainerDelete(resp http.ResponseWriter,req *http.Request) {
 		res,err2 := cmd.Output()
 		if err2 != nil {
 			logger.Default.Log("ERR",err.Error()+" @ systemctl reload nginx")
+		} else {
+			logger.Default.Log("ERR",err.Error()+" @ systemctl reload nginx\n"+string(res))
 		}
-		logger.Default.Log("ERR",err.Error()+" @ systemctl reload nginx\n"+string(res))
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()+" @ systemctl reload nginx"))
 		return

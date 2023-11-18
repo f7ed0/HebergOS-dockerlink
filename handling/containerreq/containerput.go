@@ -155,8 +155,9 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 			res,err2 := cmd.Output()
 			if err2 != nil {
 				logger.Default.Log("ERR",err.Error()+" @ ln -s")
+			} else {
+				logger.Default.Log("ERR",err.Error()+" @ ln -s\n"+string(res))
 			}
-			logger.Default.Log("ERR",err.Error()+" @ ln -s\n"+string(res))
 			resp.WriteHeader(http.StatusPreconditionFailed)
 			
 			resp.Write([]byte(err.Error()))
@@ -180,19 +181,21 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 		res,err2 := cmd.Output()
 		if err2 != nil {
 			logger.Default.Log("ERR",err.Error()+" @ systemctl reload nginx")
+		} else {
+			logger.Default.Log("ERR",err.Error()+" @ systemctl reload nginx\n"+string(res))
 		}
-		logger.Default.Log("ERR",err.Error()+" @ systemctl reload nginx\n"+string(res))
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()+" @ systemctl reload nginx"))
 		return
 	}
-	cmd = exec.Command("certbot","--nginx","-d","ssh."+name+".insash.fr")
+	cmd = exec.Command("certbot","--nginx","-d","ssh."+name+".insash.fr","-n")
 	if err := cmd.Run(); err != nil {
 		res,err2 := cmd.Output()
 		if err2 != nil {
-			logger.Default.Log("ERR",err.Error()+" @ certbot --nginx -d")
+			logger.Default.Log("ERR",err.Error()+" @ certbot --nginx -d -n")
+		} else {
+			logger.Default.Log("ERR",err.Error()+" @ certbot --nginx -d -n\n"+string(res))
 		}
-		logger.Default.Log("ERR",err.Error()+" @ certbot --nginx -d\n"+string(res))
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()+" @ certbot --nginx -d"))
 		return
