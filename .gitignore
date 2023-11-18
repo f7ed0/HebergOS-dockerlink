@@ -3,3 +3,5 @@ sandbox.go
 .env
 
 test
+
+out.log

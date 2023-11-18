@@ -1,13 +1,13 @@
 package handling
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
 
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
+	"github.com/f7ed0/HebergOS-dockerlink/logger"
 	"github.com/f7ed0/HebergOS-dockerlink/tool"
 
 	"github.com/docker/docker/api/types"
@@ -29,7 +29,7 @@ func StartDocker(resp http.ResponseWriter,req *http.Request) {
 
 	dk,err := docker.NewDockerHandler()
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -63,7 +63,7 @@ func StartDocker(resp http.ResponseWriter,req *http.Request) {
 
 	err = dk.Client.ContainerStart(dk.Context,id[0],types.ContainerStartOptions{})
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		resp.Header().Set("Content-Type", "text/plain")
 		resp.Write([]byte(err.Error()))
@@ -87,7 +87,7 @@ func StartDocker(resp http.ResponseWriter,req *http.Request) {
 	cmd := exec.Command("screen","-dmS",info.Name+"wettyssh","/usr/bin/node",".","--ssh-host=localhost","--ssh-port="+strconv.Itoa(intport+22),"--port="+strconv.Itoa(intport),"--force-ssh","--allow-iframe","--bypass-helmet")
 	cmd.Dir = os.Getenv("wettydir")
 	if err := cmd.Run(); err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusAccepted)
 		resp.Write([]byte(err.Error()))
 		return

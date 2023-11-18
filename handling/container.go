@@ -1,14 +1,14 @@
 package handling
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/f7ed0/HebergOS-dockerlink/handling/containerreq"
+	"github.com/f7ed0/HebergOS-dockerlink/logger"
 )
 
 func Container(resp http.ResponseWriter,req *http.Request) {
-	log.Default().Println(req.Method)
+	logger.Default.Log("REQ","%s => %s",req.Method,req.URL.RequestURI())
 	switch(req.Method) {
 	case http.MethodGet:
 		containerreq.ContainerGet(resp,req)

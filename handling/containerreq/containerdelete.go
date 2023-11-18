@@ -1,12 +1,12 @@
 package containerreq
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
 
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
+	"github.com/f7ed0/HebergOS-dockerlink/logger"
 	"github.com/f7ed0/HebergOS-dockerlink/tool"
 
 	"github.com/docker/docker/api/types"
@@ -32,7 +32,7 @@ func ContainerDelete(resp http.ResponseWriter,req *http.Request) {
 
 	dk,err := docker.NewDockerHandler()
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		resp.Write([]byte(err.Error()))
 		return
@@ -40,7 +40,7 @@ func ContainerDelete(resp http.ResponseWriter,req *http.Request) {
 
 	info,err := dk.Client.ContainerInspect(dk.Context,id[0])
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()))
 		return
@@ -68,24 +68,36 @@ func ContainerDelete(resp http.ResponseWriter,req *http.Request) {
 	cmd := exec.Command("rm",os.Getenv("nginxconfdir")+"/sites-available/"+info.Name+".conf",os.Getenv("nginxconfdir")+"/sites-enabled/"+info.Name+".conf")
 	if err := cmd.Run(); err != nil {
 		if !(cmd.ProcessState.ExitCode() == 1) {
-			log.Default().Println(err.Error()+"@ rm")
+			res,err2 := cmd.Output()
+			if err2 != nil {
+				logger.Default.Log("ERR",err.Error()+" @ rm")
+			}
+			logger.Default.Log("ERR",err.Error()+" @ rm\n"+string(res))
 			resp.WriteHeader(http.StatusPreconditionFailed)
 			
-			resp.Write([]byte(err.Error()))
+			resp.Write([]byte(err.Error()+" @ rm"))
 			return
 		}
 	}
 
 	cmd = exec.Command("/usr/sbin/nginx","-t")
 	if err := cmd.Run(); err != nil {
-		log.Default().Println(err.Error()+" @ nginx -t")
+		res,err2 := cmd.Output()
+		if err2 != nil {
+			logger.Default.Log("ERR",err.Error()+" @ nginx -t")
+		}
+		logger.Default.Log("ERR",err.Error()+" @ nginx -t\n"+string(res))
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()+" @ nginx -t"))
 		return
 	}
 	cmd = exec.Command("systemctl","reload","nginx")
 	if err := cmd.Run(); err != nil {
-		log.Default().Println(err.Error()+" @ systemctl reload nginx")
+		res,err2 := cmd.Output()
+		if err2 != nil {
+			logger.Default.Log("ERR",err.Error()+" @ systemctl reload nginx")
+		}
+		logger.Default.Log("ERR",err.Error()+" @ systemctl reload nginx\n"+string(res))
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()+" @ systemctl reload nginx"))
 		return
@@ -97,7 +109,7 @@ func ContainerDelete(resp http.ResponseWriter,req *http.Request) {
 		Force: true,
 	})
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		resp.Write([]byte(err.Error()))
 		return

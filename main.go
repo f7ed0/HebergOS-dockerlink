@@ -1,20 +1,25 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
 	"github.com/f7ed0/HebergOS-dockerlink/handling"
-
+	"github.com/f7ed0/HebergOS-dockerlink/logger"
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 )
 
 func main() {
+
 	godotenv.Load(".env")
+
+	err := logger.InitDefault("out.log")
 	
-	log.Default().Println("Starting...")
+	if err != nil {
+		panic(err)
+	}
+	
 	go docker.FetchStat()
 
 	mux := http.NewServeMux()
@@ -32,12 +37,11 @@ func main() {
 
 	mux.HandleFunc("/v1/env",handling.Env)
 
-	log.Default().Println("Started !")
+	logger.Default.Log("INFO","dockerlink started.")
 	handler := cors.AllowAll().Handler(mux)
-	err := http.ListenAndServe("0.0.0.0:7200",handler)
+	err = http.ListenAndServe("0.0.0.0:7200",handler)
 	if err != nil {
-		log.Default().Fatal(err.Error())
+		logger.Default.LogPanic(err.Error())
 	}
-	
 }
 

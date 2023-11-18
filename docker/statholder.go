@@ -3,13 +3,13 @@ package docker
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"math"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/f7ed0/HebergOS-dockerlink/logger"
 )
 
 const STAT_STRING string = `  "%v" : {
@@ -134,7 +134,7 @@ func (s *StatHolder) Wipe(container_id string) {
 func FetchStat() {
 	dk,err := NewDockerHandler()
 	if err != nil {
-		log.Default().Panic(err)
+		logger.Default.LogPanic(err.Error())
 	}
 
 	lasts := map[string]*Stat{}
@@ -152,7 +152,7 @@ func FetchStat() {
 		})
 
 		if err != nil {
-			log.Default().Panic(err)
+			logger.Default.LogPanic(err.Error())
 		}
 
 		for _,container := range containers {
@@ -165,7 +165,7 @@ func FetchStat() {
 
 			info,err := dk.Client.ContainerInspect(dk.Context,container.ID)
 			if err != nil {
-				log.Default().Println(err.Error())
+				logger.Default.Log("ERROR",err.Error())
 				continue
 			}
 
@@ -190,21 +190,18 @@ func FetchStat() {
 					data := json.NewDecoder(stat.Body)
 					err = data.Decode(&u)
 					if err != nil {
-						log.Default().Panic(err)
+						logger.Default.LogPanic(err.Error())
 					}
 					stat.Body.Close()
 
 					if(u == nil) {
-						log.Default().Panic("u is nil")
+						logger.Default.LogPanic("u is nil")
 					}
 
 					now,err =  time.Parse(time.RFC3339Nano,u["read"].(string))
 					if err != nil {
-						log.Default().Panic(err)
+						logger.Default.LogPanic(err.Error())
 					}
-
-					//log.Default().Println(u["networks"])
-					
 
 					use,ok := (u["memory_stats"].(map[string]any)["usage"].(float64))
 					if !ok {
@@ -257,7 +254,7 @@ func FetchStat() {
 		} 
 		t2 = time.Now()
 
-		log.Default().Printf("Statloop took %v seconds.",float64(t2.UnixMilli() - t1.UnixMilli())/1000)
+		logger.Default.Log("INFO","Statloop took %v seconds.",float64(t2.UnixMilli() - t1.UnixMilli())/1000)
 		time.Sleep(15*time.Second - time.Duration(t2.UnixNano() - t1.UnixNano()))
 	}
 }

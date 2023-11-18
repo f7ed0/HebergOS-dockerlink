@@ -1,11 +1,11 @@
 package handling
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
+	"github.com/f7ed0/HebergOS-dockerlink/logger"
 	"github.com/f7ed0/HebergOS-dockerlink/tool"
 )
 
@@ -25,7 +25,7 @@ func RestartDocker(resp http.ResponseWriter,req *http.Request) {
 
 	dk,err := docker.NewDockerHandler()
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -62,7 +62,7 @@ func RestartDocker(resp http.ResponseWriter,req *http.Request) {
 		Timeout: &t,
 	})
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		resp.Header().Set("Content-Type", "text/plain")
 		resp.Write([]byte(err.Error()))

@@ -3,7 +3,6 @@ package containerreq
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"os"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/f7ed0/HebergOS-dockerlink/consts"
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
+	"github.com/f7ed0/HebergOS-dockerlink/logger"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
@@ -95,7 +95,7 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 		"443/tcp" : {},
 	}
 	np,ok := p["ports"].([]any)
-	log.Default().Println(p["ports"],np,ok)
+	logger.Default.Log("INFO","%v %v %v",p["ports"],np,ok)
 	if ok {
 		var pt nat.Port
 		for _,port := range np {
@@ -111,7 +111,7 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 					ui = false
 				}
 			}
-			log.Default().Println(ui,pt)
+			logger.Default.Log("INFO","%v %v",ui,pt)
 			if !ui {
 				continue
 			}
@@ -133,7 +133,7 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 
 	file, err := os.Create(os.Getenv("nginxconfdir")+"/sites-available/"+name+".conf")
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()))
 		return
@@ -141,7 +141,7 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 
 	_,err = fmt.Fprintf(file,consts.NGINX_TEMPLATE,name,ports_int+80,name,ports_int)
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()))
 		return
@@ -152,7 +152,11 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 	cmd := exec.Command("ln","-s",os.Getenv("nginxconfdir")+"/sites-available/"+name+".conf",os.Getenv("nginxconfdir")+"/sites-enabled/"+name+".conf")
 	if err := cmd.Run(); err != nil {
 		if !(cmd.ProcessState.ExitCode() == 1) {
-			log.Default().Println(err.Error()+"@ ln -s")
+			res,err2 := cmd.Output()
+			if err2 != nil {
+				logger.Default.Log("ERR",err.Error()+" @ ln -s")
+			}
+			logger.Default.Log("ERR",err.Error()+" @ ln -s\n"+string(res))
 			resp.WriteHeader(http.StatusPreconditionFailed)
 			
 			resp.Write([]byte(err.Error()))
@@ -162,30 +166,42 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 
 	cmd = exec.Command("/usr/sbin/nginx","-t")
 	if err := cmd.Run(); err != nil {
-		log.Default().Println(err.Error()+" @ nginx -t")
+		res,err2 := cmd.Output()
+		if err2 != nil {
+			logger.Default.Log("ERR",err.Error()+" @ nginx -t")
+		}
+		logger.Default.Log("ERR",err.Error()+" @ nginx -t\n"+string(res))
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()+" @ nginx -t"))
 		return
 	}
 	cmd = exec.Command("systemctl","reload","nginx")
 	if err := cmd.Run(); err != nil {
-		log.Default().Println(err.Error()+" @ systemctl reload nginx")
+		res,err2 := cmd.Output()
+		if err2 != nil {
+			logger.Default.Log("ERR",err.Error()+" @ systemctl reload nginx")
+		}
+		logger.Default.Log("ERR",err.Error()+" @ systemctl reload nginx\n"+string(res))
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(err.Error()+" @ systemctl reload nginx"))
 		return
 	}
 	cmd = exec.Command("certbot","--nginx","-d","ssh."+name+".insash.fr")
 	if err := cmd.Run(); err != nil {
-		log.Default().Println(err.Error()+" @ systemctl reload nginx")
+		res,err2 := cmd.Output()
+		if err2 != nil {
+			logger.Default.Log("ERR",err.Error()+" @ certbot --nginx -d")
+		}
+		logger.Default.Log("ERR",err.Error()+" @ certbot --nginx -d\n"+string(res))
 		resp.WriteHeader(http.StatusPreconditionFailed)
-		resp.Write([]byte(err.Error()+" @ systemctl reload nginx"))
+		resp.Write([]byte(err.Error()+" @ certbot --nginx -d"))
 		return
 	}
 	
 
 	dk,err := docker.NewDockerHandler()
 	if err != nil {
-		log.Default().Printf("ERR : %v\n",err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -223,7 +239,7 @@ func ContainerPut(resp http.ResponseWriter,req *http.Request) {
 	)
 
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		resp.Write([]byte(err.Error()))
 		return 

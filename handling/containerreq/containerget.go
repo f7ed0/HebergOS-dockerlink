@@ -2,11 +2,11 @@ package containerreq
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
+	"github.com/f7ed0/HebergOS-dockerlink/logger"
 
 	"github.com/docker/docker/api/types"
 )
@@ -19,7 +19,7 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 
 	dk,err := docker.NewDockerHandler()
 	if err != nil {
-		log.Default().Printf("ERR : %v\n",err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -40,7 +40,7 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 		})
 	
 		if err != nil {
-			log.Default().Printf("ERR : %v\n",err.Error())
+			logger.Default.Log("ERR",err.Error())
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -52,13 +52,11 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 		}
 	}
 
-	log.Default().Println(ids)
-
 	result := map[string]map[string]any{"success" : {}, "error": {}}
 	for _,id := range ids {
 		json,err := dk.Client.ContainerInspect(dk.Context,id)
 		if err != nil {
-			log.Default().Printf("ERR : %v\n",err.Error())
+			logger.Default.Log("ERR",err.Error())
 			result["error"][id] = err.Error()
 		} else {
 			if  has_run && json.State.Running != running {
@@ -81,7 +79,7 @@ func ContainerGet(resp http.ResponseWriter,req *http.Request) {
 			if json.State.Running {
 				t,err := time.Parse(time.RFC3339Nano,json.State.StartedAt)
 				if err != nil {
-					log.Default().Printf("ERR : %v\n",err.Error())
+					logger.Default.Log("ERR",err.Error())
 					resp.WriteHeader(http.StatusInternalServerError)
 					return
 				}

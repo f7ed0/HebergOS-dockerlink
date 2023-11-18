@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"runtime"
 	"strings"
 
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
+	"github.com/f7ed0/HebergOS-dockerlink/logger"
 
 	"github.com/docker/docker/api/types"
 )
@@ -48,13 +48,13 @@ func gitBranchesGet(resp http.ResponseWriter,req *http.Request) {
 	jsonw := json.NewEncoder(resp)
 	dk,err := docker.NewDockerHandler()
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	idresp,err := dk.Client.ContainerExecCreate(dk.Context,id[0],exarg)
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -64,7 +64,7 @@ func gitBranchesGet(resp http.ResponseWriter,req *http.Request) {
 
 	})
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -75,13 +75,13 @@ func gitBranchesGet(resp http.ResponseWriter,req *http.Request) {
 	// inspect the exec to get the return code
 	retcode,err := dk.Client.ContainerExecInspect(dk.Context,idresp.ID)
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 	}
 	for retcode.Running {
 		retcode,err = dk.Client.ContainerExecInspect(dk.Context,idresp.ID)
 		if err != nil {
-			log.Default().Println(err.Error())
+			logger.Default.Log("ERR",err.Error())
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -97,7 +97,7 @@ func gitBranchesGet(resp http.ResponseWriter,req *http.Request) {
 				break
 			}
 			if err != nil {
-				log.Default().Println(err.Error())
+				logger.Default.Log("ERR",err.Error())
 				resp.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -114,7 +114,7 @@ func gitBranchesGet(resp http.ResponseWriter,req *http.Request) {
 			break
 		}
 		if err != nil {
-			log.Default().Println(err.Error())
+			logger.Default.Log("ERR",err.Error())
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}

@@ -2,11 +2,11 @@ package containerreq
 
 import (
 	"encoding/json"
-	"log"
 	"math"
 	"net/http"
 
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
+	"github.com/f7ed0/HebergOS-dockerlink/logger"
 
 	"github.com/docker/docker/api/types/container"
 )
@@ -56,12 +56,9 @@ func ContainerPatch(resp http.ResponseWriter, req *http.Request) {
 	memlimit,ok := p["memory"].(float64)
 	if ok {
 		res.Memory = int64(memlimit*math.Pow(2,30))
-		log.Default().Println(int64(memlimit*math.Pow(2,30)))
 	}
 
-	js := json.NewEncoder(log.Default().Writer())
-
-	js.Encode(res)
+	logger.Default.Log("INFO","\n%v",res)
 
 	update,err := dk.Client.ContainerUpdate(dk.Context,id[0],container.UpdateConfig{
 		Resources: res,

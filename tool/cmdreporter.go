@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"runtime"
 
 	"github.com/f7ed0/HebergOS-dockerlink/docker"
+	"github.com/f7ed0/HebergOS-dockerlink/logger"
 
 	"github.com/docker/docker/api/types"
 )
@@ -28,13 +28,13 @@ func CmdReporter(resp http.ResponseWriter,req *http.Request,container_id string,
 
 	dk,err := docker.NewDockerHandler()
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	idresp,err := dk.Client.ContainerExecCreate(dk.Context,container_id,exarg)
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -44,7 +44,7 @@ func CmdReporter(resp http.ResponseWriter,req *http.Request,container_id string,
 
 	})
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -53,13 +53,13 @@ func CmdReporter(resp http.ResponseWriter,req *http.Request,container_id string,
 	// inspect the exec to get the return code
 	retcode,err := dk.Client.ContainerExecInspect(dk.Context,idresp.ID)
 	if err != nil {
-		log.Default().Println(err.Error())
+		logger.Default.Log("ERR",err.Error())
 		resp.WriteHeader(http.StatusInternalServerError)
 	}
 	for retcode.Running {
 		retcode,err = dk.Client.ContainerExecInspect(dk.Context,idresp.ID)
 		if err != nil {
-			log.Default().Println(err.Error())
+			logger.Default.Log("ERR",err.Error())
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -74,7 +74,7 @@ func CmdReporter(resp http.ResponseWriter,req *http.Request,container_id string,
 			break
 		}
 		if err != nil {
-			log.Default().Println(err.Error())
+			logger.Default.Log("ERR",err.Error())
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -84,7 +84,7 @@ func CmdReporter(resp http.ResponseWriter,req *http.Request,container_id string,
 	// sending data
 	resp.Header().Set("Content-Type", "text/plain")
 	if retcode.ExitCode != 0 {
-		log.Default().Println("err")
+		logger.Default.Log("ERR","Unknown Error")
 		resp.WriteHeader(http.StatusPreconditionFailed)
 		resp.Write([]byte(res[8:]))
 		return
